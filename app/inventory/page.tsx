@@ -1,8 +1,10 @@
 import Image from "next/image";
-
+import { z } from "zod";
 type InventoryItem = {
   id: string;
   name: string;
+  priceDollars: number;
+  priceCents?: number;
   imageUrl?: string;
   quantity: number;
   unit: string;
@@ -11,6 +13,8 @@ const inventoryItems: InventoryItem[] = [
   {
     id: "1",
     name: "Example Item",
+    priceDollars: 1,
+    priceCents: 1,
     imageUrl: "/cacao.jpeg",
     quantity: 10,
     unit: "pounds",
