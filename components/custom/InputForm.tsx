@@ -9,11 +9,14 @@ const categories: string[] = ["No category", "MAIN", "BAR"];
 
 export default function InputForm({ onClose }: InputFormProps) {
   const [name, setName] = useState("");
-  const [cost, setCost] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState(0);
   const [categoryInput, setCategoryInput] = useState("");
 
   const addNewItem = async () => {
+    const priceString = price.replace(/\$/g, "").replace(/\./g, "");
+    const priceCents = parseInt(priceString);
+
     const item: InventoryItem = {
       id: "",
       name,
@@ -52,16 +55,16 @@ export default function InputForm({ onClose }: InputFormProps) {
             <input
               type="text"
               placeholder="$0.00"
-              value={cost}
+              value={price}
               onChange={(e) => {
                 const raw = e.target.value.replace(/[^0-9.]/g, "");
-                setCost(raw);
+                setPrice(raw);
               }}
               onBlur={() => {
-                if (cost) {
-                  const numericValue = parseFloat(cost);
+                if (price) {
+                  const numericValue = parseFloat(price);
                   if (!isNaN(numericValue)) {
-                    setCost(
+                    setPrice(
                       new Intl.NumberFormat("en-US", {
                         style: "currency",
                         currency: "USD",
@@ -72,10 +75,17 @@ export default function InputForm({ onClose }: InputFormProps) {
               }}
             />
             <input
-              type="text"
+              type="number"
               placeholder="Quantity"
+              min={0}
+              step={1}
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[1-9]\d*$/.test(val) || val === "") {
+                  setQuantity(parseInt(val));
+                }
+              }}
             />
             <label>Category:</label>
             <select

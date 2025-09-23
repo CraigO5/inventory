@@ -14,7 +14,7 @@ export default function InventoryCard({ item }: InventoryCardProps) {
       <div className="w-50 h-50 relative">
         {/* Image of product */}
         <Image
-          src={item.imageUrl || "/cacao.jpeg"}
+          src={"/cacao.jpeg"}
           alt={item.name}
           fill
           className="object-cover rounded-xl"
