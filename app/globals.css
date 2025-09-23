@@ -61,7 +61,7 @@ button {
 }
 
 h1 {
-  @apply text-3xl;
+  @apply text-5xl font-bold;
 }
 
 h2 {

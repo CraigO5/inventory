@@ -9,14 +9,14 @@ export default function CategoryList() {
   const [inputFormIsVisible, setInputFormIsVisible] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 
+  const getItems = async () => {
+    const res = await fetch("/api/manageInventory");
+    const data = await res.json();
+
+    setInventoryItems(data.inventory);
+  };
+
   useEffect(() => {
-    const getItems = async () => {
-      const res = await fetch("/api/manageInventory");
-      const data = await res.json();
-
-      setInventoryItems(data.inventory);
-    };
-
     getItems();
   }, []);
 
@@ -32,7 +32,10 @@ export default function CategoryList() {
       <div key={category}>
         {/* ITEM INPUT FORM */}
         {inputFormIsVisible && (
-          <InputForm onClose={() => setInputFormIsVisible(false)} />
+          <InputForm
+            onClose={() => setInputFormIsVisible(false)}
+            onItemAdded={getItems}
+          />
         )}
 
         <div className="flex justify-between mb-2 gap-2">

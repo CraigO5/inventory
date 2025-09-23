@@ -3,11 +3,12 @@ import { InventoryItem } from "@/app/types/inventory";
 
 type InputFormProps = {
   onClose: () => void;
+  onItemAdded: () => void;
 };
 
 const categories: string[] = ["No category", "MAIN", "BAR"];
 
-export default function InputForm({ onClose }: InputFormProps) {
+export default function InputForm({ onClose, onItemAdded }: InputFormProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState(0);
@@ -30,8 +31,17 @@ export default function InputForm({ onClose }: InputFormProps) {
       body: JSON.stringify(item),
     });
 
+    if (!res.ok) {
+      console.error("Failed to add new item!");
+      return false;
+    }
+
     const data = res.json();
     console.log(data);
+
+    onItemAdded();
+
+    return true;
   };
 
   return (
@@ -104,7 +114,14 @@ export default function InputForm({ onClose }: InputFormProps) {
           </div>
           <div className="gap-2 flex">
             <button
-              onClick={onClose}
+              onClick={async () => {
+                const success = await addNewItem();
+                if (success) {
+                  onClose();
+                } else {
+                  console.error("Failed to add item!");
+                }
+              }}
               className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
             >
               Submit

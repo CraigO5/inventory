@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { InventoryItem } from "@/app/types/inventory";
+import { v4 as uuidv4 } from "uuid";
 
 const inventoryItems: InventoryItem[] = [
   {
@@ -64,16 +65,21 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    const { id, ...rest } = await req.json();
+    const newId = uuidv4();
+
     const newItem: InventoryItem = {
-      id: String(inventoryItems.length + 1),
-      ...data,
+      id: newId,
+      ...rest,
     };
+
+    console.log("ID: ", newId);
+    console.log("Item: ", newItem);
 
     inventoryItems.push(newItem);
 
     return NextResponse.json({
-      message: "Item added successfully",
+      message: `${newItem.name} added successfully with id ${newItem.id}`,
       inventory: inventoryItems,
     });
   } catch (error) {
