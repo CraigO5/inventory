@@ -2,47 +2,41 @@ import { NextResponse } from "next/server";
 import { InventoryItem } from "@/app/types/inventory";
 import { v4 as uuidv4 } from "uuid";
 
-const inventoryItems: InventoryItem[] = [
+let inventoryItems: InventoryItem[] = [
   {
     id: "1",
     name: "Banana 100g",
     priceCents: 25000,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
   },
   {
     id: "2",
     name: "Banana 100g",
     priceCents: 25000,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
   },
   {
     id: "3",
     name: "Banana 100g",
     priceCents: 25000,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
   },
   {
     id: "4",
     name: "Banana 100g",
     priceCents: 25000,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
   },
   {
     id: "5",
     name: "Banana 100g",
     priceCents: 25000,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
   },
   {
     id: "6",
     name: "Example Item",
     priceCents: 1,
-    imageUrl: "/cacao.jpeg",
     quantity: 10,
     category: "main",
   },
@@ -73,9 +67,6 @@ export async function POST(req: Request) {
       ...rest,
     };
 
-    console.log("ID: ", newId);
-    console.log("Item: ", newItem);
-
     inventoryItems.push(newItem);
 
     return NextResponse.json({
@@ -86,6 +77,57 @@ export async function POST(req: Request) {
     console.error("Error adding an item: ", error);
     return NextResponse.json(
       { error: "Failed to add an item." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const { id, ...updateFields } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing item id" }, { status: 400 });
+    }
+
+    const itemIndex = inventoryItems.findIndex((item) => item.id === id);
+
+    if (itemIndex === -1) {
+      return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    }
+
+    inventoryItems[itemIndex] = {
+      ...inventoryItems[itemIndex],
+      ...updateFields,
+    };
+
+    return NextResponse.json({
+      message: `${inventoryItems[itemIndex].name} updated successfully with id ${id}`,
+      item: inventoryItems[itemIndex],
+    });
+  } catch (error) {
+    console.error("Error updating an item: ", error);
+    return NextResponse.json(
+      { error: "Failed to update an item." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const data = await req.json();
+
+    inventoryItems = inventoryItems.filter((item) => item.id !== data.id);
+
+    return NextResponse.json({
+      message: `${data.name} removed successfully with id ${data.id}`,
+      inventory: inventoryItems,
+    });
+  } catch (error) {
+    console.error("Error deleting an item: ", error);
+    return NextResponse.json(
+      { error: "Failed to delete an item." },
       { status: 500 }
     );
   }

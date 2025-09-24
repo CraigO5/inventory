@@ -34,7 +34,7 @@ export default function CategoryList() {
         {inputFormIsVisible && (
           <InputForm
             onClose={() => setInputFormIsVisible(false)}
-            onItemAdded={getItems}
+            updateList={getItems}
           />
         )}
 
@@ -43,7 +43,7 @@ export default function CategoryList() {
           <div className="gap-2 flex">
             <button
               onClick={() => setInputFormIsVisible(true)}
-              className="px-2 border rounded-lg hover:bg-white/20"
+              className="px-2 border rounded-lg hover:bg-white/20 transition-colors"
             >
               Add New Item
             </button>
@@ -54,8 +54,16 @@ export default function CategoryList() {
         {/* INVENTORY LIST */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {categoryItems.map((item) => {
-            return <InventoryCard item={item} key={item.id} />;
+            return (
+              <InventoryCard key={item.id} item={item} updateList={getItems} />
+            );
           })}
+          <button
+            onClick={() => setInputFormIsVisible(true)}
+            className="w-25 h-25 flex m-auto rounded-full bg-neutral-900/40 hover:bg-neutral-900 border border-neutral-700 hover:scale-105 transition-all flex justify-center items-center text-5xl"
+          >
+            +
+          </button>
         </div>
       </div>
     );

@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { InventoryItem } from "@/app/types/inventory";
-
+import Image from "next/image";
 type InputFormProps = {
   onClose: () => void;
-  onItemAdded: () => void;
+  updateList: () => void;
 };
 
 const categories: string[] = ["No category", "MAIN", "BAR"];
 
-export default function InputForm({ onClose, onItemAdded }: InputFormProps) {
+export default function InputForm({ onClose, updateList }: InputFormProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [categoryInput, setCategoryInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const addNewItem = async () => {
     const priceString = price.replace(/\$/g, "").replace(/\./g, "");
@@ -39,7 +40,7 @@ export default function InputForm({ onClose, onItemAdded }: InputFormProps) {
     const data = res.json();
     console.log(data);
 
-    onItemAdded();
+    updateList();
 
     return true;
   };
@@ -112,27 +113,45 @@ export default function InputForm({ onClose, onItemAdded }: InputFormProps) {
               })}
             </select>
           </div>
-          <div className="gap-2 flex">
-            <button
-              onClick={async () => {
-                const success = await addNewItem();
-                if (success) {
-                  onClose();
-                } else {
-                  console.error("Failed to add item!");
-                }
-              }}
-              className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
-            >
-              Submit
-            </button>
-            <button
-              onClick={onClose}
-              className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
+          {isLoading && (
+            <div>
+              {" "}
+              <p>Adding Item...</p>
+              <Image
+                src={"/loading.gif"}
+                alt={item.name}
+                fill
+                className="object-cover rounded-xl pointer-events-none no-select"
+              ></Image>
+            </div>
+          )}
+          {!isLoading && (
+            <div className="gap-2 flex">
+              <button
+                onClick={async () => {
+                  setIsLoading(true);
+
+                  const success = await addNewItem();
+                  if (success) {
+                    onClose();
+                  } else {
+                    console.error("Failed to add item!");
+                  }
+
+                  setIsLoading(false);
+                }}
+                className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
+              >
+                Submit
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
