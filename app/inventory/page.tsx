@@ -7,7 +7,7 @@ export default function Inventory() {
     <>
       {/* TITLE AREA */}
       <div className="flex items-center flex-col py-10">
-        <h1>CacaoTrack</h1>
+        <h1>The Backroom</h1>
         <p>Your one stop shop for inventory management!</p>
       </div>
       <div className="flex flex-col gap-4 justify-center items-center">

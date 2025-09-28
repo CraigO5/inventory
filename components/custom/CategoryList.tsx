@@ -1,4 +1,5 @@
 import InventoryCard from "./InventoryCard";
+import Image from "next/image";
 import InputForm from "./InputForm";
 import { InventoryItem } from "@/app/types/inventory";
 import { useEffect, useState } from "react";
@@ -8,12 +9,15 @@ const categories: string[] = ["No category", "MAIN", "BAR"];
 export default function CategoryList() {
   const [inputFormIsVisible, setInputFormIsVisible] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
 
   const getItems = async () => {
+    setItemsLoading(true);
     const res = await fetch("/api/manageInventory");
     const data = await res.json();
 
     setInventoryItems(data.inventory);
+    setItemsLoading(false);
   };
 
   useEffect(() => {
@@ -52,19 +56,34 @@ export default function CategoryList() {
         <hr className="mb-5" />
 
         {/* INVENTORY LIST */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categoryItems.map((item) => {
-            return (
-              <InventoryCard key={item.id} item={item} updateList={getItems} />
-            );
-          })}
-          <button
-            onClick={() => setInputFormIsVisible(true)}
-            className="w-25 h-25 flex m-auto rounded-full bg-neutral-900/40 hover:bg-neutral-900 border border-neutral-700 hover:scale-105 transition-all flex justify-center items-center text-5xl"
-          >
-            +
-          </button>
-        </div>
+        {itemsLoading && (
+          <Image
+            src={"/loading.gif"}
+            alt={"Loading inventory items..."}
+            width={50}
+            height={50}
+          />
+        )}
+        {!itemsLoading && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categoryItems.map((item) => {
+              return (
+                <InventoryCard
+                  key={item.id}
+                  item={item}
+                  updateList={getItems}
+                />
+              );
+            })}
+            <button
+              onClick={() => setInputFormIsVisible(true)}
+              className="border border-neutral-700 rounded-2xl bg-neutral-900/40 hover:bg-neutral-900 hover:scale-102 transition-transform flex flex-col justify-center items-center  p-10"
+            >
+              <span className="text-5xl">+</span>
+              <span className="text-2xl">Add New Item</span>
+            </button>
+          </div>
+        )}
       </div>
     );
   });

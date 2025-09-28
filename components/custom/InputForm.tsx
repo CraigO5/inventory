@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { InventoryItem } from "@/app/types/inventory";
-import Image from "next/image";
+
 type InputFormProps = {
   onClose: () => void;
   updateList: () => void;
@@ -114,15 +114,9 @@ export default function InputForm({ onClose, updateList }: InputFormProps) {
             </select>
           </div>
           {isLoading && (
-            <div>
+            <div className="flex">
               {" "}
               <p>Adding Item...</p>
-              <Image
-                src={"/loading.gif"}
-                alt={item.name}
-                fill
-                className="object-cover rounded-xl pointer-events-none no-select"
-              ></Image>
             </div>
           )}
           {!isLoading && (
