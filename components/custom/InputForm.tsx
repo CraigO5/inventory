@@ -6,7 +6,16 @@ type InputFormProps = {
   updateList: () => void;
 };
 
-const categories: string[] = ["No category", "MAIN", "BAR"];
+const categories: string[] = [
+  "No category",
+  "MAIN",
+  "BAR",
+  "POUCH & TABLE BOX",
+  "SMALL PACK",
+  "PLASTIC JAR",
+  "DRINKS",
+  "OTHERS",
+];
 
 export default function InputForm({ onClose, updateList }: InputFormProps) {
   const [name, setName] = useState("");

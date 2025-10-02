@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { InventoryItem } from "@/app/types/inventory";
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 
 type InventoryCardProps = {
   item: InventoryItem;
@@ -27,7 +27,7 @@ export default function InventoryCard({
   };
 
   const addItems = () => {
-    const input = prompt("How many items do you want to add?:");
+    const input = prompt("How many items are you adding?:");
 
     if (input !== null) {
       const num = parseInt(input);
@@ -50,7 +50,7 @@ export default function InventoryCard({
   };
 
   const removeItems = () => {
-    const input = prompt("How many items do you want to remove?");
+    const input = prompt("How many items did you sell?");
 
     if (input !== null) {
       const num = parseInt(input);
@@ -87,25 +87,16 @@ export default function InventoryCard({
 
   return (
     <div
-      className="border border-neutral-700 p-4 rounded-2xl space-y-2 bg-neutral-900 hover:scale-102 transition-transform"
+      className="border border-neutral-700 p-4 rounded-2xl space-y-2 bg-neutral-900 hover:scale-102 transition-transform relative"
       key={item.id}
     >
-      <div className="w-50 h-50 relative">
-        {/* Image of product */}
-        <Image
-          src={"/cacao.jpeg"}
-          alt={item.name}
-          fill
-          className="object-cover rounded-xl pointer-events-none no-select"
-        ></Image>
-      </div>
       {/* Name of product */}
-      <h3 className="font-bold text-lg">{item.name}</h3>
+      <h3 className="font-bold text-lg text-yellow-200">{item.name}</h3>
       {/* Price of product by quantity */}
       <p>${item.priceCents / 100}</p>
       {/* Add/remove item quantity by ONE */}
       <div className="flex gap-2">
-        <button
+        {/* <button
           onClick={async () => {
             setQuantity((prev) => Math.max(0, prev - 1));
             sendQuantity(quantity - 1);
@@ -113,9 +104,9 @@ export default function InventoryCard({
           className="px-2 border rounded-full hover:bg-white/20"
         >
           -
-        </button>
-        <p>{quantity}</p>
-        <button
+        </button> */}
+        <p className="text-xl ">{quantity} item(s)</p>
+        {/* <button
           onClick={async () => {
             setQuantity((prev) => prev + 1);
             sendQuantity(quantity + 1);
@@ -123,26 +114,26 @@ export default function InventoryCard({
           className="px-2 border rounded-full hover:bg-white/20"
         >
           +
-        </button>
+        </button> */}
       </div>
       {/* Add/remove items by BULK*/}
-      <div className="gap-2 flex">
+      <div className="gap-2 flex mb-7">
         <button
           onClick={addItems}
           className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
         >
-          Add Items
+          Restock
         </button>
         <button
           onClick={removeItems}
-          className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
+          className="bg-green-500 text-black p-2 rounded-lg font-bold hover:bg-green-600 transition-colors"
         >
-          Remove Items
+          Sell
         </button>
       </div>
       {/* Delete entire listing */}
       <button
-        className="text-red-500 hover:text-red-700"
+        className="text-red-500 hover:text-red-700 absolute bottom-5 right-5"
         onClick={async () => {
           const confirmed = confirm(
             "WARNING: Deleting a listing is permanent! Proceed?"
@@ -152,7 +143,7 @@ export default function InventoryCard({
           }
         }}
       >
-        Delete Listing
+        <Trash2 size={20} />
       </button>
     </div>
   );

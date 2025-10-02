@@ -1,27 +1,38 @@
 import InventoryCard from "./InventoryCard";
-import Image from "next/image";
+
 import InputForm from "./InputForm";
 import { InventoryItem } from "@/app/types/inventory";
 import { useEffect, useState } from "react";
 
-const categories: string[] = ["No category", "MAIN", "BAR"];
-
 export default function CategoryList() {
   const [inputFormIsVisible, setInputFormIsVisible] = useState(false);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [itemsLoading, setItemsLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const getItems = async () => {
-    setItemsLoading(true);
     const res = await fetch("/api/manageInventory");
     const data = await res.json();
 
     setInventoryItems(data.inventory);
-    setItemsLoading(false);
+  };
+
+  const getCategories = async () => {
+    const res = await fetch("/api/manageCategories");
+    const data = await res.json();
+
+    setCategories(data.categories);
   };
 
   useEffect(() => {
-    getItems();
+    const fetchData = async () => {
+      setLoading(true);
+      await getCategories();
+      await getItems();
+      setLoading(false);
+    };
+
+    fetchData();
   }, []);
 
   return categories.map((category) => {
@@ -33,7 +44,7 @@ export default function CategoryList() {
 
     // CATEGORY HEADER
     return (
-      <div key={category}>
+      <div key={category} className="mb-5">
         {/* ITEM INPUT FORM */}
         {inputFormIsVisible && (
           <InputForm
@@ -56,34 +67,20 @@ export default function CategoryList() {
         <hr className="mb-5" />
 
         {/* INVENTORY LIST */}
-        {itemsLoading && (
-          <Image
-            src={"/loading.gif"}
-            alt={"Loading inventory items..."}
-            width={50}
-            height={50}
-          />
-        )}
-        {!itemsLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categoryItems.map((item) => {
-              return (
-                <InventoryCard
-                  key={item.id}
-                  item={item}
-                  updateList={getItems}
-                />
-              );
-            })}
-            <button
-              onClick={() => setInputFormIsVisible(true)}
-              className="border border-neutral-700 rounded-2xl bg-neutral-900/40 hover:bg-neutral-900 hover:scale-102 transition-transform flex flex-col justify-center items-center  p-10"
-            >
-              <span className="text-5xl">+</span>
-              <span className="text-2xl">Add New Item</span>
-            </button>
-          </div>
-        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {categoryItems.map((item) => {
+            return (
+              <InventoryCard key={item.id} item={item} updateList={getItems} />
+            );
+          })}
+          <button
+            onClick={() => setInputFormIsVisible(true)}
+            className="border border-neutral-700 rounded-2xl bg-neutral-900/40 hover:bg-neutral-900 hover:scale-102 transition-transform flex flex-col justify-center items-center  p-10"
+          >
+            <span className="text-5xl">+</span>
+            <span className="text-2xl">Add New Item</span>
+          </button>
+        </div>
       </div>
     );
   });
