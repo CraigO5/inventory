@@ -1,6 +1,7 @@
 import { InventoryItem } from "@/app/types/inventory";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { sellItem, restockItem } from "@/app/salesStore";
 
 type InventoryCardProps = {
   item: InventoryItem;
@@ -26,7 +27,7 @@ export default function InventoryCard({
     updateList();
   };
 
-  const addItems = () => {
+  const restockItems = () => {
     const input = prompt("How many items are you adding?:");
 
     if (input !== null) {
@@ -43,20 +44,21 @@ export default function InventoryCard({
 
         setQuantity(quantityDiff);
         sendQuantity(quantityDiff);
+        restockItem(item.id, num);
       } else {
         alert("Invalid input! Please enter a positive integer.");
       }
     }
   };
 
-  const removeItems = () => {
+  const sellItems = () => {
     const input = prompt("How many items did you sell?");
 
     if (input !== null) {
       const num = parseInt(input);
 
       if (!isNaN(num) && num > 0) {
-        console.log(`Added ${num} items.`);
+        console.log(`Sold ${num} items.`);
 
         let quantityDiff = quantity - num;
 
@@ -66,6 +68,7 @@ export default function InventoryCard({
 
         setQuantity(quantityDiff);
         sendQuantity(quantityDiff);
+        sellItem(item.id, num);
       } else {
         alert("Invalid input! Please enter a positive integer.");
       }
@@ -119,13 +122,13 @@ export default function InventoryCard({
       {/* Add/remove items by BULK*/}
       <div className="gap-2 flex mb-7">
         <button
-          onClick={addItems}
+          onClick={restockItems}
           className="bg-white text-black p-2 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
         >
           Restock
         </button>
         <button
-          onClick={removeItems}
+          onClick={sellItems}
           className="bg-green-500 text-black p-2 rounded-lg font-bold hover:bg-green-600 transition-colors"
         >
           Sell

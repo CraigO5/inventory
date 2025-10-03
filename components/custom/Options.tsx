@@ -2,19 +2,23 @@ import { useState, useEffect } from "react";
 import { InventoryItem } from "@/app/types/inventory";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { getCounts } from "@/app/salesStore"; // your global tracker
+
+type Row = {
+  Products: string;
+  Price?: string;
+  "Start balance"?: number;
+  "Items Received"?: number;
+  "Total Balance"?: number;
+  "Items sold"?: number;
+};
 
 export default function Options() {
   const [dayStarted, setDayStarted] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [startBalances, setStartBalances] = useState<Record<number, number>>(
-    {}
-  );
-  const [itemsSold, setItemsSold] = useState<Record<number, number>>({});
-  const [itemsReceived, setItemsReceived] = useState<Record<number, number>>(
-    {}
-  );
 
+  // Fetch inventory
   const fetchInventory = async (): Promise<InventoryItem[]> => {
     const res = await fetch("/api/manageInventory");
     const data = await res.json();
@@ -22,22 +26,13 @@ export default function Options() {
     return data.inventory;
   };
 
+  // Start day
   const startDay = async () => {
-    const items = await fetchInventory();
-    const balances: Record<number, number> = {};
-    const sold: Record<number, number> = {};
-    const received: Record<number, number> = {};
-    items.forEach((item) => {
-      balances[item.id] = item.quantity;
-      sold[item.id] = 0;
-      received[item.id] = 0;
-    });
-    setStartBalances(balances);
-    setItemsSold(sold);
-    setItemsReceived(received);
+    await fetchInventory(); // ensure inventory is loaded
     setDayStarted(true);
   };
 
+  // End day: export Excel
   const endDay = async () => {
     const confirmed = confirm("You are about to end the day. Confirm?");
     if (!confirmed) return;
@@ -45,17 +40,11 @@ export default function Options() {
     await exportToExcel();
   };
 
-  // Increment sold/restocked counts
-  const sellItem = (id: number) => {
-    setItemsSold((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-  };
-  const restockItem = (id: number) => {
-    setItemsReceived((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-  };
-
+  // Export Excel using global counts
   const exportToExcel = async () => {
     setIsDownloading(true);
     const items = await fetchInventory();
+    const counts = getCounts(); // get sold/received data
 
     const grouped: Record<string, InventoryItem[]> = {};
     items.forEach((item) => {
@@ -64,22 +53,22 @@ export default function Options() {
       grouped[category].push(item);
     });
 
-    const rows: any[] = [];
+    const rows: any = [];
     Object.entries(grouped).forEach(([category, items]) => {
       rows.push({ Products: category });
 
       items.forEach((item) => {
-        const start = startBalances[item.id] ?? item.quantity;
-        const sold = itemsSold[item.id] ?? 0;
-        const received = itemsReceived[item.id] ?? 0;
-        const end = start + received - sold;
+        const end = item.quantity;
+        const sold = counts[item.id]?.sold ?? 0;
+        const received = counts[item.id]?.received ?? 0;
+        const start = item.quantity + sold - received; // starting balance
 
         rows.push({
           Products: item.name,
           Price: (item.priceCents / 100).toFixed(2),
           "Start balance": start,
           "Items Received": received,
-          "Total Balance": "",
+          "Total Balance": start + received,
           "Items sold": sold,
           "End Balance": end,
         });
@@ -108,14 +97,6 @@ export default function Options() {
       ],
     });
 
-    let rowIndex = 2;
-    Object.entries(grouped).forEach(([category, items]) => {
-      const cellAddress = `A${rowIndex}`;
-      if (worksheet[cellAddress])
-        worksheet[cellAddress].s = { font: { bold: true } };
-      rowIndex += items.length + 2;
-    });
-
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
     const excelBuffer = XLSX.write(workbook, {
@@ -127,6 +108,7 @@ export default function Options() {
     setIsDownloading(false);
   };
 
+  // CSV export fallback
   const downloadCSV = async () => {
     setIsDownloading(true);
     const res = await fetch("/api/manageInventory");
@@ -149,6 +131,7 @@ export default function Options() {
     setIsDownloading(false);
   };
 
+  // Warn user if day is active
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (dayStarted) {
@@ -163,6 +146,7 @@ export default function Options() {
   return (
     <div className="flex flex-col items-center gap-5">
       <h2>Options</h2>
+
       <div className="gap-4 flex flex-col items-center">
         {!dayStarted ? (
           <button
@@ -202,52 +186,6 @@ export default function Options() {
           </span>
         )}
       </div>
-      {dayStarted && (
-        <div className="w-full max-w-3xl mt-4">
-          <h3 className="text-xl font-bold mb-2">Track Sales & Restocks</h3>
-          <table className="w-full border-collapse border">
-            <thead>
-              <tr>
-                <th className="border p-2">Product</th>
-                <th className="border p-2">Price</th>
-                <th className="border p-2">Start Balance</th>
-                <th className="border p-2">Sold</th>
-                <th className="border p-2">Received</th>
-                <th className="border p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventory.map((item) => (
-                <tr key={item.id}>
-                  <td className="border p-1">{item.name}</td>
-                  <td className="border p-1">
-                    {(item.priceCents / 100).toFixed(2)}
-                  </td>
-                  <td className="border p-1">
-                    {startBalances[item.id] ?? item.quantity}
-                  </td>
-                  <td className="border p-1">{itemsSold[item.id] ?? 0}</td>
-                  <td className="border p-1">{itemsReceived[item.id] ?? 0}</td>
-                  <td className="border p-1 flex gap-2">
-                    <button
-                      className="px-2 bg-red-500 text-white rounded"
-                      onClick={() => sellItem(item.id)}
-                    >
-                      Sell +1
-                    </button>
-                    <button
-                      className="px-2 bg-green-500 text-white rounded"
-                      onClick={() => restockItem(item.id)}
-                    >
-                      Restock +1
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
