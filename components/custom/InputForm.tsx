@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InventoryItem } from "@/app/types/inventory";
 
 type InputFormProps = {
@@ -6,23 +6,13 @@ type InputFormProps = {
   updateList: () => void;
 };
 
-const categories: string[] = [
-  "No category",
-  "MAIN",
-  "BAR",
-  "POUCH & TABLE BOX",
-  "SMALL PACK",
-  "PLASTIC JAR",
-  "DRINKS",
-  "OTHERS",
-];
-
 export default function InputForm({ onClose, updateList }: InputFormProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [categoryInput, setCategoryInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
 
   const addNewItem = async () => {
     const priceString = price.replace(/\$/g, "").replace(/\./g, "");
@@ -53,6 +43,17 @@ export default function InputForm({ onClose, updateList }: InputFormProps) {
 
     return true;
   };
+
+  const getCategories = async () => {
+    const res = await fetch("/api/manageCategories");
+    const data = await res.json();
+
+    setCategories(data.categories);
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   return (
     <div

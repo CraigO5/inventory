@@ -1,5 +1,5 @@
 import InventoryCard from "./InventoryCard";
-
+import Image from "next/image";
 import InputForm from "./InputForm";
 import { InventoryItem } from "@/app/types/inventory";
 import { useEffect, useState } from "react";
@@ -15,6 +15,12 @@ export default function CategoryList() {
     const data = await res.json();
 
     setInventoryItems(data.inventory);
+    localStorage.setItem("inventory", JSON.stringify(data.inventory));
+
+    const saved = localStorage.getItem("inventory");
+    if (saved) {
+      setInventoryItems(JSON.parse(saved));
+    }
   };
 
   const getCategories = async () => {
@@ -29,11 +35,26 @@ export default function CategoryList() {
       setLoading(true);
       await getCategories();
       await getItems();
+
       setLoading(false);
     };
 
     fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center">
+        <p>Loading...</p>
+        <Image
+          src={"/loading.gif"}
+          alt="Loading Icon"
+          width={100}
+          height={100}
+        />
+      </div>
+    );
+  }
 
   return categories.map((category) => {
     const categoryItems = inventoryItems.filter(

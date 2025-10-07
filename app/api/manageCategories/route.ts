@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
-import { InventoryItem } from "@/app/types/inventory";
 
-let categories: string[] = [
-  "No category",
-  "MAIN",
-  "BAR",
-  "POUCH & TABLE BOX",
-  "SMALL PACK",
-  "PLASTIC JAR",
-  "DRINKS",
-  "OTHERS",
-];
+let categories: string[] = ["No category"];
 
 export async function GET() {
   try {
@@ -29,24 +19,18 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { id, ...rest } = await req.json();
-    const newId = uuidv4();
+    const category = await req.json();
 
-    const newItem: InventoryItem = {
-      id: newId,
-      ...rest,
-    };
-
-    inventoryItems.push(newItem);
+    categories.push(category);
 
     return NextResponse.json({
-      message: `${newItem.name} added successfully with id ${newItem.id}`,
-      inventory: inventoryItems,
+      message: `${category} added successfully`,
+      categories,
     });
   } catch (error) {
-    console.error("Error adding an item: ", error);
+    console.error("Error adding a category: ", error);
     return NextResponse.json(
-      { error: "Failed to add an item." },
+      { error: "Failed to add a category." },
       { status: 500 }
     );
   }

@@ -7,22 +7,21 @@ import { getCounts } from "@/app/salesStore"; // your global tracker
 type Row = {
   Products: string;
   Price?: string;
-  "Start balance"?: number;
-  "Items Received"?: number;
-  "Total Balance"?: number;
-  "Items sold"?: number;
+  "Start balance"?: string | number;
+  "Items Received"?: string | number;
+  "Total Balance"?: string | number;
+  "Items sold"?: string | number;
+  "End Balance"?: string | number;
 };
 
 export default function Options() {
   const [dayStarted, setDayStarted] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   // Fetch inventory
   const fetchInventory = async (): Promise<InventoryItem[]> => {
     const res = await fetch("/api/manageInventory");
     const data = await res.json();
-    setInventory(data.inventory);
     return data.inventory;
   };
 
@@ -53,7 +52,7 @@ export default function Options() {
       grouped[category].push(item);
     });
 
-    const rows: any = [];
+    const rows: Row[] = [];
     Object.entries(grouped).forEach(([category, items]) => {
       rows.push({ Products: category });
 
@@ -175,9 +174,9 @@ export default function Options() {
         {!isDownloading && (
           <button
             onClick={downloadCSV}
-            className="px-2 border rounded-lg hover:bg-white/20 transition-colors"
+            className="px-4 py-2 border rounded-lg hover:bg-white/20 transition-colors"
           >
-            Save to CSV
+            Save Inventory to .CSV File
           </button>
         )}
         {isDownloading && (
@@ -186,6 +185,12 @@ export default function Options() {
           </span>
         )}
       </div>
+      <button
+        onClick={downloadCSV}
+        className="px-4 py-2 border rounded-lg hover:bg-white/20 transition-colors"
+      >
+        Upload .CSV File
+      </button>
     </div>
   );
 }
